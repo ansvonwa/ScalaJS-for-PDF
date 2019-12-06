@@ -1,0 +1,50 @@
+\documentclass{article}
+\usepackage{hyperref}
+
+
+\immediate\write18{grep -v 'freeze' ../scala/target/scala-*/scalajs-for-pdf-fastopt.js > scalajs-postprocessed.js}
+\immediate\pdfobj stream file {scalajs-postprocessed.js}
+\edef\scalajsStream{\the\pdflastobj\space 0 R}
+
+\edef\scalajsFuncObj{<<
+  /S/JavaScript/JS \scalajsStream
+>>}
+\immediate\pdfobj{\scalajsFuncObj}
+\edef\scalajsFunc{\the\pdflastobj\space 0 R}
+
+% you can also directly insert JS code
+\immediate\pdfobj{<<
+  /S/JavaScript/JS (otherFunc=function(arg){app.alert('You say ' + arg);})
+>>}
+\edef\otherFunc{\the\pdflastobj\space 0 R}
+
+
+\pdfnames{
+  /JavaScript <<
+    %name tree mapping doc. level JavaScript functions to object numbers
+    /Names [(click) \scalajsFunc (otherFunc) \otherFunc ]
+    /Limits [(click) (otherFunc)] %first and last in alphab. order
+  >>
+}
+
+\begin{document}
+\section{Example Buttons}
+
+\leavevmode
+\pdfstartlink user {
+    /Subtype /Link
+    /A <<
+        /S/JavaScript
+        /JS (click('Hello!'))
+    >>
+}Hello!\pdfendlink
+
+\leavevmode
+\pdfstartlink user {
+    /Subtype /Link
+    /A <<
+        /S/JavaScript
+        /JS (otherFunc('Good bye!'))
+    >>
+}Good bye!\pdfendlink
+\end{document}
